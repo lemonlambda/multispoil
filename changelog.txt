@@ -1,0 +1,18 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 12.11.2024
+  Bugfixes:
+    - Inserters spoiling in hand should be fixed
+    - Assembling machine spoiling should be fixed
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 12.11.2024
+  Optimization:
+    - Optimized weights to be like 100x more efficient in some cases at least
+  Bugfixes:
+    - Worked out many kinks with the weighted system
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 11.11.2024
+  API Change:
+    - Allowed for adding weighted spoiling

@@ -83,10 +83,13 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
 
     if entity ~= nil then
         local inventory = nil
-        if entity.held_stack.can_set_stack({name = item_name, count = 1}) then
-            entity.held_stack.set_stack({name = item_name, count = 1})
-            return
-        elseif entity.get_inventory(defines.inventory.robot_cargo) ~= nil then
+        if entity.type == "inserter" then
+            local success, _ = pcall(entity.held_stack.set_stack, {name = item_name, count = 1})
+            if success == false then
+                error("Failed to spoil in inserter")
+            end
+        end
+        if entity.get_inventory(defines.inventory.robot_cargo) ~= nil then
             inventory = entity.get_inventory(defines.inventory.robot_cargo)
         elseif entity.get_inventory(defines.inventory.assembling_machine_dump) ~= nil then
             inventory = entity.get_inventory(defines.inventory.assembling_machine_dump)

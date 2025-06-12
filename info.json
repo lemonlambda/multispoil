@@ -1,8 +1,9 @@
 {
     "name": "multispoil",
-    "version": "0.1.4",
+    "version": "2.0.0",
     "title": "Multi-spoil",
-    "package": "https://github.com/lemonlambda/multispoil",
+    "homepage": "https://github.com/lemonlambda/multispoil",
+    "source": "https://github.com/lemonlambda/multispoil",
     "description": "An API for working with items that spoil into multiple items",
     "author": "LambdaLemon",
     "factorio_version": "2.0",

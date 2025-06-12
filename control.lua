@@ -15,10 +15,11 @@ function string.split(to_split, delimiter)
     return {to_split}
 end
 
+-- Picks a weight item
 local function pick_weighted(items) 
     local total_weight = 0
-    for _,weight in pairs(items) do
-        total_weight = total_weight + weight
+    for _,properties in pairs(items) do
+        total_weight = total_weight + properties.weight
     end
 
     local random_weight = math.random(1, total_weight)
@@ -28,7 +29,9 @@ local function pick_weighted(items)
 
     local item = ""
 
-    for name,weight in pairs(items) do
+    for name,properties in pairs(items) do
+        local weight = properties.weight
+        
         if last_weight == 0 then
             current_weight = weight
         else
@@ -44,6 +47,22 @@ local function pick_weighted(items)
     end
 
     return item
+end
+
+-- Takes weighted items list and returns an item name
+local function pick_weighted_items(item_names)
+    local weighted_items = {}
+    for _,item_name in pairs(item_names) do
+        local weighted_item_name = string.split(item_name, "|")
+        local splitted = string.split(weighted_item_name[2], ".")
+        local weight = tonumber(splitted[1])
+        local count = tonumber(splitted[2])
+
+        weighted_items[weighted_item_name[1]] = {weight = weight, count = count}
+    end 
+    item_name = pick_weighted(weighted_items)
+
+    return item_name, count
 end
 
 script.on_event(defines.events.on_script_trigger_effect, function(properties)
@@ -63,17 +82,18 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
     -- Split by every item
     local item_names = string.split(items, ",")
     local item_name = ""
+    local item_count = 1
 
     if weighted == true then
-        local weighted_items = {}
-        for _,item_name in pairs(item_names) do
-            local weighted_item_name = string.split(item_name, "|")
-
-            weighted_items[weighted_item_name[1]] = tonumber(weighted_item_name[2])
-        end 
-        item_name = pick_weighted(weighted_items)
+        local name,count = pick_weighted_items(item_names)
+        item_name = name
+        item_count = count
     else
-        item_name = item_names[math.random(1, #item_names)]
+        local random_item = item_names[math.random(1, #item_names)]
+        local splitted = string.split(random_item, ".")
+        game.print(splitted[1] .. ", " .. splitted[2])
+        item_name = splitted[1]
+        item_count = splitted[2]
     end
 
     -- Either insert into a container or drop on the ground
@@ -83,15 +103,16 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
 
     if entity ~= nil then
         local inventory = nil
+        game.print(entity.type)
         if entity.type == "inserter" then
-            local success, _ = pcall(entity.held_stack.set_stack, {name = item_name, count = 1})
+            local success, _ = pcall(entity.held_stack.set_stack, {name = item_name, count = item_count, quality = properties.quality})
             if success == false then
                 error("Failed to spoil in inserter")
             end
-        elseif entity.type == "belt" then
-            local success, _ = pcall(game.get_surface(properties.surface_index).spill_item_stack, {position = position, stack = {name = item_name, count = 1}})
+        elseif entity.type == "transport-belt" or entity.type == "belt" then
+            local success, _ = pcall(game.get_surface(properties.surface_index).spill_item_stack, {position = position, stack = {name = item_name, count = item_count, quality = properties.quality}, drop_full_stack=true, use_start_position_on_failure = false})
             if success == false then
-                error("Failed to spoin on belt")
+                error("Failed to spoil on belt")
             end
         end
         if entity.get_inventory(defines.inventory.robot_cargo) ~= nil then
@@ -104,8 +125,9 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
         if inventory == nil then
             error("Inventory is nil: " .. entity.name)
         end
-        inventory.insert{name = item_name, count = 1}
+        inventory.insert{name = item_name, count = item_count, quality = properties.quality}
     else
-        game.get_surface(properties.surface_index).spill_item_stack{position = position, stack = {name = item_name, count = 1}}
+        game.get_surface(properties.surface_index).spill_item_stack{position = position, stack = {name = item_name, count = item_count, quality = properties.quality}}
     end
 end)
+

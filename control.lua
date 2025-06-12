@@ -91,7 +91,7 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
     else
         local random_item = item_names[math.random(1, #item_names)]
         local splitted = string.split(random_item, ".")
-        game.print(splitted[1] .. ", " .. splitted[2])
+        -- game.print(splitted[1] .. ", " .. splitted[2])
         item_name = splitted[1]
         item_count = splitted[2]
     end
@@ -103,7 +103,7 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
 
     if entity ~= nil then
         local inventory = nil
-        game.print(entity.type)
+        -- game.print(entity.type)
         if entity.type == "inserter" then
             local success, _ = pcall(entity.held_stack.set_stack, {name = item_name, count = item_count, quality = properties.quality})
             if success == false then

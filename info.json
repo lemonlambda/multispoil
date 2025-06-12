@@ -1,6 +1,6 @@
 {
     "name": "multispoil",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "title": "Multi-spoil",
     "package": "https://github.com/lemonlambda/multispoil",
     "description": "An API for working with items that spoil into multiple items",

@@ -88,6 +88,11 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
             if success == false then
                 error("Failed to spoil in inserter")
             end
+        elseif entity.type == "belt" then
+            local success, _ = pcall(game.get_surface(properties.surface_index).spill_item_stack, {position = position, stack = {name = item_name, count = 1}})
+            if success == false then
+                error("Failed to spoin on belt")
+            end
         end
         if entity.get_inventory(defines.inventory.robot_cargo) ~= nil then
             inventory = entity.get_inventory(defines.inventory.robot_cargo)

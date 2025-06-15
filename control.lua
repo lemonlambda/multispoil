@@ -101,7 +101,7 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
     local safe_spill = false
 
     if entity ~= nil then
-        game.print(entity.type)
+        -- game.print(entity.type)
         if entity.type == "inserter" then
             local stack_item_count = item_count
             if entity.held_stack.valid_for_read and entity.held_stack.name == item_name and entity.held_stack.quality == properties.quality then

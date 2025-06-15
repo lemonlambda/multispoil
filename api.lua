@@ -24,7 +24,7 @@ end
 --- Example 2: `{["iron-plate"], ["copper-plate"], ["iron-ore"]}`
 --- Example 3: `"iron-plate"``
 --- @param item_names table<string, integer>|table<string>|string
---- @return Trigger
+--- @return data.SpoilToTriggerResult
 function multispoil.create_spoil_trigger(item_names)
     if type(item_names) ~= "table" and type(item_names) ~= "string" then
         error("Wrong type used for multispoil.create_spoil_trigger")

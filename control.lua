@@ -1,20 +1,5 @@
 require("util")
 
---- Splits by delimiter
---- @param to_split string
---- @param delimiter string
---- @return string[]
-function string.split(to_split, delimiter)
-    if string.find(to_split, delimiter) ~= 0 then
-        local splitted = {}
-        for split in string.gmatch(to_split, "([^" .. delimiter .. "]+)") do
-            table.insert(splitted, split)
-        end
-        return splitted
-    end
-    return {to_split}
-end
-
 -- Picks a weight item
 local function pick_weighted(items) 
     local total_weight = 0
@@ -65,6 +50,19 @@ local function pick_weighted_items(item_names)
     return item_name, count
 end
 
+-- Only for special case inventories relevant to items spoiling
+local function get_spoil_inventory(entity)
+    local bot_cargo = entity.get_inventory(defines.inventory.robot_cargo)
+    if bot_cargo then
+        return bot_cargo
+    end
+    local machine_dump = entity.get_inventory(defines.inventory.assembling_machine_dump)
+    if machine_dump then
+        return machine_dump
+    end
+    return entity
+end
+
 script.on_event(defines.events.on_script_trigger_effect, function(properties)
     -- game.print(tostring(properties.effect_id))
 
@@ -80,7 +78,7 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
     end
     
     -- Split by every item
-    local item_names = string.split(items, ",")
+    local item_names = util.split(items, ",")
     local item_name = ""
     local item_count = 1
 
@@ -90,44 +88,43 @@ script.on_event(defines.events.on_script_trigger_effect, function(properties)
         item_count = count
     else
         local random_item = item_names[math.random(1, #item_names)]
-        local splitted = string.split(random_item, ".")
+        local splitted = util.split(random_item, ".")
         -- game.print(splitted[1] .. ", " .. splitted[2])
         item_name = splitted[1]
-        item_count = splitted[2]
+        item_count = tonumber(splitted[2]) or 1
     end
 
     -- Either insert into a container or drop on the ground
     -- Since we only get an entity if it's in a container we can check that
     local position = table.deepcopy(properties.source_position or properties.target_position or {x = 0, y = 0})
     local entity = properties.target_entity or properties.source_entity
+    local safe_spill = false
 
     if entity ~= nil then
-        local inventory = nil
-        -- game.print(entity.type)
+        game.print(entity.type)
         if entity.type == "inserter" then
-            local success, _ = pcall(entity.held_stack.set_stack, {name = item_name, count = item_count, quality = properties.quality})
-            if success == false then
-                error("Failed to spoil in inserter")
+            local stack_item_count = item_count
+            if entity.held_stack.valid_for_read and entity.held_stack.name == item_name and entity.held_stack.quality == properties.quality then
+                stack_item_count = stack_item_count + entity.held_stack.count
+            end
+            -- 
+            if entity.held_stack.set_stack({name = item_name, count = stack_item_count, quality = properties.quality}) then
+                item_count = 0
             end
         elseif entity.type == "transport-belt" or entity.type == "belt" then
-            local success, _ = pcall(game.get_surface(properties.surface_index).spill_item_stack, {position = position, stack = {name = item_name, count = item_count, quality = properties.quality}, drop_full_stack=true, use_start_position_on_failure = false})
-            if success == false then
-                error("Failed to spoil on belt")
-            end
+            safe_spill = true
         end
-        if entity.get_inventory(defines.inventory.robot_cargo) ~= nil then
-            inventory = entity.get_inventory(defines.inventory.robot_cargo)
-        elseif entity.get_inventory(defines.inventory.assembling_machine_dump) ~= nil then
-            inventory = entity.get_inventory(defines.inventory.assembling_machine_dump)
-        else
-            inventory = entity
+        if item_count > 0 then
+            local inventory = get_spoil_inventory(entity)
+            local spoil_count = inventory.insert{name = item_name, count = item_count, quality = properties.quality}
+            item_count = item_count - spoil_count
         end
-        if inventory == nil then
-            error("Inventory is nil: " .. entity.name)
+    end
+    if item_count > 0 then
+        local surface = game.get_surface(properties.surface_index)
+        if surface then
+          surface.spill_item_stack{position = position, stack = {name = item_name, count = item_count, quality = properties.quality}, drop_full_stack = safe_spill, use_start_position_on_failure = not safe_spill}
         end
-        inventory.insert{name = item_name, count = item_count, quality = properties.quality}
-    else
-        game.get_surface(properties.surface_index).spill_item_stack{position = position, stack = {name = item_name, count = item_count, quality = properties.quality}}
     end
 end)
 

@@ -6,5 +6,5 @@
     "description": "An API for working with items that spoil into multiple items",
     "author": "LambdaLemon",
     "factorio_version": "2.0",
-    "dependencies": ["enable-all-feature-flags"]
+    "spoiling_required": true
 }

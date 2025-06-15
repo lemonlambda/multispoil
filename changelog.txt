@@ -4,6 +4,11 @@ Date: 12.14.2025
   Features:
     - Handles spoil_to_trigger_result and spoil_result now
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.1
+Date: 12.05.2025
+  Removals:
+    - No longer using enable-all-feature-flags
+---------------------------------------------------------------------------------------------------
 Version: 2.0.0
 Date: 12.05.2025
   Features:

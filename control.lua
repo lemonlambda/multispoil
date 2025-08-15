@@ -56,7 +56,7 @@ local function get_spoil_inventory(entity)
     if bot_cargo then
         return bot_cargo
     end
-    local machine_dump = entity.get_inventory(defines.inventory.assembling_machine_dump)
+    local machine_dump = entity.get_inventory(defines.inventory.crafter_trash)
     if machine_dump then
         return machine_dump
     end
